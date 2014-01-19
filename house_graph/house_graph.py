@@ -3,8 +3,10 @@ from urllib2 import urlopen
 import xml.etree.cElementTree as ET
 from lxml import html  # returns Element objects
 
+home_url = 'http://donut.caltech.edu'
+
 # the search page for the Caltech undergrad directory
-directory_url = 'http://donut.caltech.edu/directory/'
+directory_url = home_url + '/directory/'
 
 # the beginning of the url for searches
 base_search_url = directory_url + 'index.php?state=search'
@@ -27,7 +29,10 @@ for selection in selection_list:
         option_dic[child.text] = child.attrib['value']
     selection_dics[id_] = option_dic
 
-def get_html_with_search(search_dic):
+namelist_re = re.compile(
+        '<table.{0,300}?Name.*?Email.*?Graduation.*?</table>', re.DOTALL)
+
+def get_raw_html_from_search(search_dic):
     '''Returns a string of the html code that comes from the search specified
     by SEARCH_DIC. The format of SEARCH_DIC is 'selection_id: value'.
     '''
@@ -40,33 +45,14 @@ def get_html_with_search(search_dic):
     url = ''.join(join_list)
     return urlopen(url).read()
 
-# print get_html_with_search({'houseid': selection_dics['houseid']['Blacker'], 'group': selection_dics['group']['ug-2016']})
-
-# A dictionary {number that user can choose, corresponding url snippet}
-choices_for_user = {}
-count = 0
-for group in selection_dics:
-    print group
-    print
-    for el in selection_dics[group]:
-        print count, '\t', el
-        urlsnippet = ''.join(['&', group, '=', selection_dics[group][el]])
-        choices_for_user[count] = urlsnippet
-        count += 1
-    print
-    print
-
-print choices_for_user
-
-namelist_re = re.compile(
-        '<tbody>.*?Name.*?Email.*?Graduation.*?Membership.*?</tdbody>',
-         re.DOTALL)
-
-house_affiliations_re = re.compile('House Affiliations.*?</tr>',
-        re.DOTALL)
-
-houses = ['Avery', 'Blacker', 'Dabney', 'Fleming', 'Lloyd', 'Page',
-        'Ricketts', 'Ruddock']
+def get_html_from_search(search_dic):
+    '''Uses get_raw_html_from_search to get a string of the html code that
+    comes from the search specified by SEARCH_DIC, then returns the part
+    of that html code that contains the list of names.
+    '''
+    raw_html = get_raw_html_from_search(search_dic)
+    # print raw_html
+    return namelist_re.findall(raw_html)[0]
 
 def find_house_in_text(line):
     '''Given a LINE of text, searches to see if any of the houses' names
@@ -95,6 +81,60 @@ def get_member_info(url):
         if houseinfo is not None:
             members_houses.append(houseinfo)
     return members_houses
+
+def get_name_and_link(line):
+    '''Given an html snippet that looks something like
+    <a href='/directory.etc/'>First Last Name</a, returns a tuple
+    ('First Last Name', '/directory.etc/')
+    '''
+    link_begin_tag = 'href=\''
+    link_end_tag = '\'>'
+    name_end_tag = '</a'
+    link_begin_index = line.index(link_begin_tag) + len(link_begin_tag)
+    link_end_index = line.index(link_end_tag)
+    name_begin_index = link_end_index + len(link_end_tag)
+    name_end_index = line.index(name_end_tag)
+    link = line[link_begin_index : link_end_index]
+    name = line[name_begin_index : name_end_index]
+    return name, home_url + link
+
+individual_a_re = re.compile('<a href=\'/dir.*?</a')
+
+def get_names_links_from_search(search_dic):
+    '''Returns a set of tuples (name, link_to_personal_page) resulting
+    from the search specified by SEARCH_DIC'''
+    processed_html = get_html_from_search(search_dic)
+    individual_line_list = individual_a_re.findall(processed_html)
+    name_link_set = set([])
+    for indiv in individual_line_list:
+        name_link_set.add(get_name_and_link(indiv))
+    return name_link_set
+   
+myroot = get_names_links_from_search({'houseid': selection_dics['houseid']['Blacker'], 'group': selection_dics['group']['ug-2016']})
+
+print myroot
+
+# A dictionary {number that user can choose, corresponding url snippet}
+choices_for_user = {}
+count = 0
+for group in selection_dics:
+    print group
+    print
+    for el in selection_dics[group]:
+        print count, '\t', el
+        urlsnippet = ''.join(['&', group, '=', selection_dics[group][el]])
+        choices_for_user[count] = urlsnippet
+        count += 1
+    print
+    print
+
+# print choices_for_user
+
+house_affiliations_re = re.compile('House Affiliations.*?</tr>',
+        re.DOTALL)
+
+houses = ['Avery', 'Blacker', 'Dabney', 'Fleming', 'Lloyd', 'Page',
+        'Ricketts', 'Ruddock']
 
 myroot = get_member_info('http://donut.caltech.edu/directory/index.php?state=details&inum=8651')
 
