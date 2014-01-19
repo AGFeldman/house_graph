@@ -42,6 +42,22 @@ def get_html_with_search(search_dic):
 
 # print get_html_with_search({'houseid': selection_dics['houseid']['Blacker'], 'group': selection_dics['group']['ug-2016']})
 
+# A dictionary {number that user can choose, corresponding url snippet}
+choices_for_user = {}
+count = 0
+for group in selection_dics:
+    print group
+    print
+    for el in selection_dics[group]:
+        print count, '\t', el
+        urlsnippet = ''.join(['&', group, '=', selection_dics[group][el]])
+        choices_for_user[count] = urlsnippet
+        count += 1
+    print
+    print
+
+print choices_for_user
+
 namelist_re = re.compile(
         '<tbody>.*?Name.*?Email.*?Graduation.*?Membership.*?</tdbody>',
          re.DOTALL)
