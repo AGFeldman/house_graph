@@ -188,6 +188,33 @@ print display_for_user
 search = choices_for_user[86]
 print get_names_links_from_search(search)
 
+operators = set(['&', '|'])
+
+def split_by_operator(input_):
+    '''Example: '53&600&7|8' -> ['53', '&', '600', '&', '7', '|', '8']'''
+    mylist = []
+    most_recent = ''
+    for c in input_:
+        if c not in operators:
+            most_recent += c
+        else:
+            mylist.append(most_recent)
+            mylist.append(c)
+            most_recent = ''
+    return mylist
+
+def sub_with_searches(mylist):
+    for i in range(len(mylist)):
+        if mylist[i] not in operators:
+            mylist[i] = 'get_names_links_from_search(choices_for_user['\
+                         + mylist[i] + '])'
+
+mylist = split_by_operator('53&600&7|8')
+sub_with_searches(mylist)
+print
+print mylist
+
 # def user_input_to_names_links(input_):
     # example: (5 & 6 & 7 | 8) & (9 | 10)
+#    input_ = input_.replace(' ', '')
 
