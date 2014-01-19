@@ -109,10 +109,24 @@ def get_names_links_from_search(search_dic):
     for indiv in individual_line_list:
         name_link_set.add(get_name_and_link(indiv))
     return name_link_set
-   
-myroot = get_names_links_from_search({'houseid': selection_dics['houseid']['Blacker'], 'group': selection_dics['group']['ug-2016']})
+ 
+def get_names_links_from_many_searches(search_dics):
+    '''Returns a set of tuples (name, link_to_personal_page) resulting
+    from all of the searches specified in SEARCH_DICS, a list of
+    dictionaries that specify searches.
+    '''
+    name_link_set = set([])
+    for search_dic in search_dics:
+        name_link_set.update(get_names_links_from_search(search_dic))
+    return name_link_set
 
-print myroot
+searches = [{'houseid': selection_dics['houseid']['Blacker'],
+            'group': selection_dics['group']['ug-2016']},
+           {'houseid': selection_dics['houseid']['Dabney'],
+            'group': selection_dics['group']['ug-2016']}]
+
+search_results = get_names_links_from_many_searches(searches)
+print search_results
 
 # A dictionary {number that user can choose, corresponding url snippet}
 choices_for_user = {}
