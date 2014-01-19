@@ -54,6 +54,9 @@ def get_html_from_search(search_dic):
     # print raw_html
     return namelist_re.findall(raw_html)[0]
 
+houses = ['Avery', 'Blacker', 'Dabney', 'Fleming', 'Lloyd', 'Page',
+        'Ricketts', 'Ruddock']
+
 def find_house_in_text(line):
     '''Given a LINE of text, searches to see if any of the houses' names
     appear in the line. If the house name does appear in the line, searches
@@ -67,6 +70,9 @@ def find_house_in_text(line):
             if not fullness:
                 assert 'Social' in line
             return house, fullness
+
+house_affiliations_re = re.compile('House Affiliations.*?</tr>',
+        re.DOTALL)
 
 def get_member_info(url):
     '''Given a URL for a personal page on the directory, returns a list of 
@@ -120,12 +126,27 @@ def get_names_links_from_many_searches(search_dics):
         name_link_set.update(get_names_links_from_search(search_dic))
     return name_link_set
 
+def get_names_memberships_from_many_searches(search_dics):
+    '''Returns a set of tuples (name, list_of_memberships) resulting
+    from all the searches specified in SEARCH_DICS, a list of dictionaries
+    that specify searches. list_of_memberships is a list of tuples
+    (house, is_full_member).
+    '''
+    name_link_set = get_names_links_from_many_searches(search_dics)
+    name_membership_list = []
+    for el in name_link_set:
+        name = el[0]
+        url = el[1]
+        member_info = get_member_info(url)
+        name_membership_list.append((name, member_info))
+    return name_membership_list
+
 searches = [{'houseid': selection_dics['houseid']['Blacker'],
             'group': selection_dics['group']['ug-2016']},
            {'houseid': selection_dics['houseid']['Dabney'],
             'group': selection_dics['group']['ug-2016']}]
 
-search_results = get_names_links_from_many_searches(searches)
+search_results = get_names_memberships_from_many_searches(searches)
 print search_results
 
 # A dictionary {number that user can choose, corresponding url snippet}
@@ -143,12 +164,6 @@ for group in selection_dics:
     print
 
 # print choices_for_user
-
-house_affiliations_re = re.compile('House Affiliations.*?</tr>',
-        re.DOTALL)
-
-houses = ['Avery', 'Blacker', 'Dabney', 'Fleming', 'Lloyd', 'Page',
-        'Ricketts', 'Ruddock']
 
 myroot = get_member_info('http://donut.caltech.edu/directory/index.php?state=details&inum=8651')
 
