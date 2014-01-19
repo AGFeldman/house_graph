@@ -32,17 +32,25 @@ for selection in selection_list:
 namelist_re = re.compile(
         '<table.{0,300}?Name.*?Email.*?Graduation.*?</table>', re.DOTALL)
 
-def get_raw_html_from_search(search_dic):
+# # old
+# def get_raw_html_from_search(search_dic):
+#     '''Returns a string of the html code that comes from the search specified
+#     by SEARCH_DIC. The format of SEARCH_DIC is 'selection_id: value'.
+#     '''
+#     join_list = [base_search_url]
+#     for el in search_dic:
+#         join_list.append('&')
+#         join_list.append(el)
+#         join_list.append('=')
+#         join_list.append(search_dic[el])
+#     url = ''.join(join_list)
+#     return urlopen(url).read()
+
+def get_raw_html_from_search(search):
     '''Returns a string of the html code that comes from the search specified
-    by SEARCH_DIC. The format of SEARCH_DIC is 'selection_id: value'.
+    by SEARCH. The format of SEARCH is (selection_id, value).
     '''
-    join_list = [base_search_url]
-    for el in search_dic:
-        join_list.append('&')
-        join_list.append(el)
-        join_list.append('=')
-        join_list.append(search_dic[el])
-    url = ''.join(join_list)
+    url = ''.join([base_search_url, '&', search[0], '=', search[1]])
     return urlopen(url).read()
 
 def get_html_from_search(search_dic):
@@ -116,23 +124,43 @@ def get_names_links_from_search(search_dic):
         name_link_set.add(get_name_and_link(indiv))
     return name_link_set
  
-def get_names_links_from_many_searches(search_dics):
-    '''Returns a set of tuples (name, link_to_personal_page) resulting
-    from all of the searches specified in SEARCH_DICS, a list of
-    dictionaries that specify searches.
-    '''
-    name_link_set = set([])
-    for search_dic in search_dics:
-        name_link_set.update(get_names_links_from_search(search_dic))
-    return name_link_set
+# def get_names_links_from_many_searches(search_dics):
+#     '''Returns a set of tuples (name, link_to_personal_page) resulting
+#     from all of the searches specified in SEARCH_DICS, a list of
+#     dictionaries that specify searches.
+#     '''
+#     name_link_set = set([])
+#     for search_dic in search_dics:
+#         name_link_set.update(get_names_links_from_search(search_dic))
+#     return name_link_set
+# 
+# def get_names_memberships_from_many_searches(search_dics):
+#     '''Returns a set of tuples (name, list_of_memberships) resulting
+#     from all the searches specified in SEARCH_DICS, a list of dictionaries
+#     that specify searches. list_of_memberships is a list of tuples
+#     (house, is_full_member).
+#     '''
+#     name_link_set = get_names_links_from_many_searches(search_dics)
+#     name_membership_list = []
+#     for el in name_link_set:
+#         name = el[0]
+#         url = el[1]
+#         member_info = get_member_info(url)
+#         name_membership_list.append((name, member_info))
+#     return name_membership_list
 
-def get_names_memberships_from_many_searches(search_dics):
-    '''Returns a set of tuples (name, list_of_memberships) resulting
-    from all the searches specified in SEARCH_DICS, a list of dictionaries
-    that specify searches. list_of_memberships is a list of tuples
-    (house, is_full_member).
+# old testing
+# searches = [{'houseid': selection_dics['houseid']['Blacker'],
+#             'group': selection_dics['group']['ug-2016']},
+#            {'houseid': selection_dics['houseid']['Dabney'],
+#             'group': selection_dics['group']['ug-2016']}]
+# search_results = get_names_memberships_from_many_searches(searches)
+# print search_results
+
+def names_memberships_from_names_links(name_link_set):
+    '''Given NAME_LINK_SET, a set of names and links to their corresponding
+    personal pages, returns a list of tuples (name, membership_info).
     '''
-    name_link_set = get_names_links_from_many_searches(search_dics)
     name_membership_list = []
     for el in name_link_set:
         name = el[0]
@@ -141,35 +169,25 @@ def get_names_memberships_from_many_searches(search_dics):
         name_membership_list.append((name, member_info))
     return name_membership_list
 
-# testing
-searches = [{'houseid': selection_dics['houseid']['Blacker'],
-            'group': selection_dics['group']['ug-2016']},
-           {'houseid': selection_dics['houseid']['Dabney'],
-            'group': selection_dics['group']['ug-2016']}]
-search_results = get_names_memberships_from_many_searches(searches)
-print search_results
-
 # A dictionary {number that user can choose, corresponding url snippet}
 choices_for_user = {}
-display_for_user = []
+display_for_user_list = []
 count = 0
 for group in selection_dics:
-    display_for_user.append(group)
+    display_for_user_list.append(group)
     for el in selection_dics[group]:
-        choices_for_user[count] = {group: selection_dics[group][el]}
-        display_for_user.append(str(count) + '\t' + el)
+        choices_for_user[count] = (group, selection_dics[group][el])
+        display_for_user_list.append(str(count) + '\t' + el)
         count += 1
-    display_for_user.append('\n')
+    display_for_user_list.append('')
 
-print '\n'.join(display_for_user)
+display_for_user = '\n'.join(display_for_user_list)
+print display_for_user
 
-# for group in selection_dics:
-#     print group
-#     print
-#     for el in selection_dics[group]:
-#         print count, '\t', el
-#         urlsnippet = ''.join(['&', group, '=', selection_dics[group][el]])
-#         choices_for_user[count] = urlsnippet
-#         count += 1
-#     print
-#     print
+# testing
+search = choices_for_user[86]
+print get_names_links_from_search(search)
+
+# def user_input_to_names_links(input_):
+    # example: (5 & 6 & 7 | 8) & (9 | 10)
+
