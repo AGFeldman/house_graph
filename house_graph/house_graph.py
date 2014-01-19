@@ -6,7 +6,7 @@ import xml.etree.cElementTree as ET
 directory_url = 'http://donut.caltech.edu/directory/'
 
 # the beginning of the url for searches
-base_search_rul = directory_url + 'index.php?state=search'
+base_search_url = directory_url + 'index.php?state=search'
 
 html = urlopen(directory_url).read()
 # re looks for html code corresponding to drop-down selection
@@ -27,4 +27,17 @@ for selection in selection_list:
         option_dic[child.text] = child.attrib['value']
     selection_dics[id_] = option_dic
 
-print selection_dics['houseid']
+def get_html_with_search(search_dic):
+    '''Returns a string of the html code that comes from the search specified
+    by SEARCH_DIC. The format of SEARCH_DIC is 'selection_id: value'.
+    '''
+    join_list = [base_search_url]
+    for el in search_dic:
+        join_list.append('&')
+        join_list.append(el)
+        join_list.append('=')
+        join_list.append(search_dic[el])
+    url = ''.join(join_list)
+    return urlopen(url).read()
+
+print get_html_with_search({'houseid': selection_dics['houseid']['Blacker'], 'group': selection_dics['group']['ug-2016']})
