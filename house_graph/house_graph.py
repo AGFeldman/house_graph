@@ -141,11 +141,11 @@ def get_names_memberships_from_many_searches(search_dics):
         name_membership_list.append((name, member_info))
     return name_membership_list
 
+# testing
 searches = [{'houseid': selection_dics['houseid']['Blacker'],
             'group': selection_dics['group']['ug-2016']},
            {'houseid': selection_dics['houseid']['Dabney'],
             'group': selection_dics['group']['ug-2016']}]
-
 search_results = get_names_memberships_from_many_searches(searches)
 print search_results
 
@@ -162,9 +162,3 @@ for group in selection_dics:
         count += 1
     print
     print
-
-# print choices_for_user
-
-myroot = get_member_info('http://donut.caltech.edu/directory/index.php?state=details&inum=8651')
-
-print myroot
