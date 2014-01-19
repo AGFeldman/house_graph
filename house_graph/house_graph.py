@@ -151,14 +151,25 @@ print search_results
 
 # A dictionary {number that user can choose, corresponding url snippet}
 choices_for_user = {}
+display_for_user = []
 count = 0
 for group in selection_dics:
-    print group
-    print
+    display_for_user.append(group)
     for el in selection_dics[group]:
-        print count, '\t', el
-        urlsnippet = ''.join(['&', group, '=', selection_dics[group][el]])
-        choices_for_user[count] = urlsnippet
+        choices_for_user[count] = {group: selection_dics[group][el]}
+        display_for_user.append(str(count) + '\t' + el)
         count += 1
-    print
-    print
+    display_for_user.append('\n')
+
+print '\n'.join(display_for_user)
+
+# for group in selection_dics:
+#     print group
+#     print
+#     for el in selection_dics[group]:
+#         print count, '\t', el
+#         urlsnippet = ''.join(['&', group, '=', selection_dics[group][el]])
+#         choices_for_user[count] = urlsnippet
+#         count += 1
+#     print
+#     print
