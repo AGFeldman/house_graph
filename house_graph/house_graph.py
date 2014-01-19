@@ -53,12 +53,24 @@ houses = ['Avery', 'Blacker', 'Dabney', 'Fleming', 'Lloyd', 'Page',
         'Ricketts', 'Ruddock']
 
 def find_house_in_text(line):
+    '''Given a LINE of text, searches to see if any of the houses' names
+    appear in the line. If the house name does appear in the line, searches
+    to see whether the word 'Full' also appears in the line (indicating full
+    membership, as opposed to social membership). If there is a house
+    membership in the line, returns a tuple (house, is_full_member).
+    '''
     for house in houses:
         if house in line:
             fullness = 'Full' in line
+            if not fullness:
+                assert 'Social' in line
             return house, fullness
 
 def get_member_info(url):
+    '''Given a URL for a personal page on the directory, returns a list of 
+    tuples detailing house memberships. (The tuples are detailed in the
+    find_house_in_text function.)
+    '''
     members_houses = []
     text = urlopen(url).read()
     text = house_affiliations_re.findall(text)[0]
