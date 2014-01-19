@@ -32,20 +32,6 @@ for selection in selection_list:
 namelist_re = re.compile(
         '<table.{0,300}?Name.*?Email.*?Graduation.*?</table>', re.DOTALL)
 
-# # old
-# def get_raw_html_from_search(search_dic):
-#     '''Returns a string of the html code that comes from the search specified
-#     by SEARCH_DIC. The format of SEARCH_DIC is 'selection_id: value'.
-#     '''
-#     join_list = [base_search_url]
-#     for el in search_dic:
-#         join_list.append('&')
-#         join_list.append(el)
-#         join_list.append('=')
-#         join_list.append(search_dic[el])
-#     url = ''.join(join_list)
-#     return urlopen(url).read()
-
 def get_raw_html_from_search(search):
     '''Returns a string of the html code that comes from the search specified
     by SEARCH. The format of SEARCH is (selection_id, value).
@@ -59,8 +45,9 @@ def get_html_from_search(search_dic):
     of that html code that contains the list of names.
     '''
     raw_html = get_raw_html_from_search(search_dic)
-    # print raw_html
-    return namelist_re.findall(raw_html)[0]
+    re_results = namelist_re.findall(raw_html)
+    if len(re_results) > 0:
+        return re_results[0]
 
 houses = ['Avery', 'Blacker', 'Dabney', 'Fleming', 'Lloyd', 'Page',
         'Ricketts', 'Ruddock']
@@ -118,45 +105,14 @@ def get_names_links_from_search(search_dic):
     '''Returns a set of tuples (name, link_to_personal_page) resulting
     from the search specified by SEARCH_DIC'''
     processed_html = get_html_from_search(search_dic)
+    if processed_html is None:
+        return set([])
     individual_line_list = individual_a_re.findall(processed_html)
     name_link_set = set([])
     for indiv in individual_line_list:
         name_link_set.add(get_name_and_link(indiv))
     return name_link_set
  
-# def get_names_links_from_many_searches(search_dics):
-#     '''Returns a set of tuples (name, link_to_personal_page) resulting
-#     from all of the searches specified in SEARCH_DICS, a list of
-#     dictionaries that specify searches.
-#     '''
-#     name_link_set = set([])
-#     for search_dic in search_dics:
-#         name_link_set.update(get_names_links_from_search(search_dic))
-#     return name_link_set
-# 
-# def get_names_memberships_from_many_searches(search_dics):
-#     '''Returns a set of tuples (name, list_of_memberships) resulting
-#     from all the searches specified in SEARCH_DICS, a list of dictionaries
-#     that specify searches. list_of_memberships is a list of tuples
-#     (house, is_full_member).
-#     '''
-#     name_link_set = get_names_links_from_many_searches(search_dics)
-#     name_membership_list = []
-#     for el in name_link_set:
-#         name = el[0]
-#         url = el[1]
-#         member_info = get_member_info(url)
-#         name_membership_list.append((name, member_info))
-#     return name_membership_list
-
-# old testing
-# searches = [{'houseid': selection_dics['houseid']['Blacker'],
-#             'group': selection_dics['group']['ug-2016']},
-#            {'houseid': selection_dics['houseid']['Dabney'],
-#             'group': selection_dics['group']['ug-2016']}]
-# search_results = get_names_memberships_from_many_searches(searches)
-# print search_results
-
 def names_memberships_from_names_links(name_link_set):
     '''Given NAME_LINK_SET, a set of names and links to their corresponding
     personal pages, returns a list of tuples (name, membership_info).
@@ -184,37 +140,70 @@ for group in selection_dics:
 display_for_user = '\n'.join(display_for_user_list)
 print display_for_user
 
-# testing
-search = choices_for_user[86]
-print get_names_links_from_search(search)
-
 operators = set(['&', '|'])
+delimiters = set(['(', ')'])
+op_and_de = set.union(operators, delimiters)
 
 def split_by_operator(input_):
-    '''Example: '53&600&7|8' -> ['53', '&', '600', '&', '7', '|', '8']'''
+    '''Example: '(53&600&7|8)|10' ->
+    ['(', '53', '&', '600', '&', '7', '|', '8', ')', '|', '10']'''
     mylist = []
     most_recent = ''
     for c in input_:
-        if c not in operators:
+        if c not in op_and_de:
             most_recent += c
         else:
-            mylist.append(most_recent)
+            if most_recent != '':
+                mylist.append(most_recent)
+                most_recent = ''
             mylist.append(c)
-            most_recent = ''
+    if most_recent != '':
+        mylist.append(most_recent)
     return mylist
 
 def sub_with_searches(mylist):
     for i in range(len(mylist)):
-        if mylist[i] not in operators:
+        if mylist[i] not in op_and_de:
             mylist[i] = 'get_names_links_from_search(choices_for_user['\
                          + mylist[i] + '])'
 
-mylist = split_by_operator('53&600&7|8')
-sub_with_searches(mylist)
-print
-print mylist
+def eval_operator(mylist, op, expand_to):
+    while op in mylist:
+        ind = mylist.index(op)
+        right = mylist.pop(ind + 1)
+        left = mylist.pop(ind - 1)
+        ind -= 1
+        joinlist = ['(', expand_to, '(', left, ',', right, '))']
+        mylist[ind] = ''.join(joinlist)
 
-# def user_input_to_names_links(input_):
-    # example: (5 & 6 & 7 | 8) & (9 | 10)
-#    input_ = input_.replace(' ', '')
+def eval_without_parens(mylist):
+    eval_operator(mylist, '&', 'set.intersection')
+    eval_operator(mylist, '|', 'set.union')
+    assert len(mylist) == 1
+    return '(' + mylist[0] + ')'
 
+def list_rindex(thelist, findthis):
+    length = len(thelist)
+    ind_of_reversed = list(reversed(thelist)).index(findthis)
+    return length - 1 - ind_of_reversed
+
+def full_parse(input_):
+    input_ = input_.replace(' ', '')
+    mylist = split_by_operator(input_)
+    sub_with_searches(mylist)
+    mylist.insert(0, '(')
+    mylist.append(')')
+    while ')' in mylist:
+        end_ind = mylist.index(')')
+        begin_ind = list_rindex(mylist[:end_ind], '(')
+        mylist[end_ind] = eval_without_parens(mylist[begin_ind + 1 : end_ind])
+        del mylist[begin_ind : end_ind]
+    assert len(mylist) == 1
+    return mylist[0]
+
+def user_input_to_names_links(input_):
+    return eval(full_parse(input_))
+
+# testing
+myinput = '(1 | 2 | 3 | 4 | 5 | 6 | 7 | 8) & (11 | 22 | 33 | 44)'
+print user_input_to_names_links(myinput)
