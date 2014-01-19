@@ -136,9 +136,7 @@ for group in selection_dics:
         display_for_user_list.append(str(count) + '\t' + el)
         count += 1
     display_for_user_list.append('')
-
 display_for_user = '\n'.join(display_for_user_list)
-print display_for_user
 
 operators = set(['&', '|'])
 delimiters = set(['(', ')'])
@@ -204,6 +202,23 @@ def full_parse(input_):
 def user_input_to_names_links(input_):
     return eval(full_parse(input_))
 
-# testing
-myinput = '(1 | 2 | 3 | 4 | 5 | 6 | 7 | 8) & (11 | 22 | 33 | 44)'
-print user_input_to_names_links(myinput)
+def get_user_input():
+    print display_for_user
+    msg = 'Use set operations to describe the set of people you would like to'\
+            ' consider.'\
+            '\nFor example, if you would like to consider Mole-Darbs'\
+            '\n(students who are both Moles and Darbs)'\
+            '\nin the classes of 2017, 2016, 2015, and 2014, then enter'\
+            '\n\'(43 & 47) & (16 | 30 | 31 | 32)\'.'\
+            '\nThe decreasing precedence order is as follows: (), &, |.'\
+            '\nEnter description: '
+    input_ = raw_input(msg)
+    return input_
+
+def query():
+    input_ = get_user_input()
+    names_links_set = user_input_to_names_links(input_)
+    member_info = names_memberships_from_names_links(names_links_set)
+    return member_info
+
+print query()
