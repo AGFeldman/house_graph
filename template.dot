@@ -1,9 +1,9 @@
-digraph template {
-    Blacker [style=filled, fillcolor=black, fontcolor=white];
-    Dabney [style=filled, fillcolor=darkgreen, fontcolor=white];
-    Ricketts [style=filled, fillcolor=maroon, fontcolor=white];
-    Fleming [style=filled, fillcolor=red, fontcolor=white];
-    Lloyd [style=filled, fillcolor=yellow];
-    Page [style=filled, fillcolor=blue, fontcolor=white];
-    Ruddock [style=filled, fillcolor=navy, fontcolor=white];
-    Avery [style=filled, fillcolor=white];
+graph template {
+    Blacker [style=filled, fillcolor=black, fontcolor=white, pos="-2,0!"];
+    Dabney [style=filled, fillcolor=darkgreen, fontcolor=white, pos="-4,4!"];
+    Ricketts [style=filled, fillcolor=maroon, fontcolor=white, pos="-4,2!"];
+    Fleming [style=filled, fillcolor=red, fontcolor=white, pos="2,0!"];
+    Lloyd [style=filled, fillcolor=yellow, pos="2,6!"];
+    Page [style=filled, fillcolor=blue, fontcolor=white, pos="4,4!"];
+    Ruddock [style=filled, fillcolor=navy, fontcolor=white, pos="4,2!"];
+    Avery [style=filled, fillcolor=white, pos="-2,6!"];
