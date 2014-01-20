@@ -1,0 +1,9 @@
+digraph template {
+    Blacker [style=filled, fillcolor=black, fontcolor=white];
+    Dabney [style=filled, fillcolor=darkgreen, fontcolor=white];
+    Ricketts [style=filled, fillcolor=maroon, fontcolor=white];
+    Fleming [style=filled, fillcolor=red, fontcolor=white];
+    Lloyd [style=filled, fillcolor=yellow];
+    Page [style=filled, fillcolor=blue, fontcolor=white];
+    Ruddock [style=filled, fillcolor=navy, fontcolor=white];
+    Avery [style=filled, fillcolor=white];
