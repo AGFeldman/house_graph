@@ -6,16 +6,29 @@ get_member_info module.
 
 import get_member_info as gmi
 from shutil import copy2
+import sys
 
-min_memberships = 2
-input_ = gmi.get_user_input()
-outputname = raw_input('Name of output file? (Should end in .dot): ')
-if outputname == '':
-    outputname = 'output.dot'
-include_single_members = raw_input('Include students who are members of only '\
-        'one house? (y/n): ')
-if include_single_members == 'y':
-    min_memberships = 1
+if len(sys.argv) == 1:
+    min_memberships = 2
+    input_ = gmi.get_user_input()
+    outputname = raw_input('Name of output file? (Should end in .dot): ')
+    if outputname == '':
+        outputname = 'output.dot'
+    include_single_members = raw_input('Show students who are members of '\
+            'just one house? (y/n): ')
+    if include_single_members == 'y':
+        min_memberships = 1
+else:
+    # command-line usage: python graph.py "set_description" [-s] [outputname]
+    input_ = sys.argv[1]
+    outputname = 'out.dot'
+    min_memberships = 2
+    for arg in sys.argv[2:]:
+        if arg == '-s':
+            min_memberships = 1
+        else:
+            outputname = arg
+
 copy2('template.dot', outputname)
 title = gmi.make_title(input_)
 member_info = gmi.query(input_)

@@ -152,6 +152,8 @@ for group in selection_dics:
         count += 1
     display_for_user_list.append('')
 display_for_user = '\n'.join(display_for_user_list)
+with open('user_choices.txt', 'w') as file_:
+    file_.write(display_for_user)
 
 operators = set(['&', '|'])
 delimiters = set(['(', ')'])
