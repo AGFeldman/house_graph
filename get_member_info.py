@@ -257,7 +257,7 @@ def get_user_input():
     msg = 'Use set operations to describe the set of people you would like to'\
             ' consider.'\
             '\nFor example, if you would like to consider Mole-Darbs'\
-            '\n(students who are both Moles and Darbs)'\
+            '\n(students in both Blacker and Dabney)'\
             '\nin the classes of 2017, 2016, 2015, and 2014, then enter'\
             '\n\'(43 & 47) & (16 | 30 | 31 | 32)\'.'\
             '\nThe decreasing precedence order is as follows: (), &, |.'\
