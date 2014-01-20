@@ -39,12 +39,12 @@ def get_raw_html_from_search(search):
     url = ''.join([base_search_url, '&', search[0], '=', search[1]])
     return urlopen(url).read()
 
-def get_html_from_search(search_dic):
+def get_html_from_search(search):
     '''Uses get_raw_html_from_search to get a string of the html code that
-    comes from the search specified by SEARCH_DIC, then returns the part
+    comes from the search specified by SEARCH, then returns the part
     of that html code that contains the list of names.
     '''
-    raw_html = get_raw_html_from_search(search_dic)
+    raw_html = get_raw_html_from_search(search)
     re_results = namelist_re.findall(raw_html)
     if len(re_results) > 0:
         return re_results[0]
@@ -160,12 +160,21 @@ def split_by_operator(input_):
     return mylist
 
 def sub_with_searches(mylist):
+    '''Substitutes numbers in mylist with the python code that gets name-link
+    information from the search corresponding to the number. For example,
+    ['1', '&', '2'] -> ['get_names_links_from_search(choices_for_user[1]', '&',
+    'get_names_links_from_search(choices_for_user[2]].
+    '''
     for i in range(len(mylist)):
         if mylist[i] not in op_and_de:
             mylist[i] = 'get_names_links_from_search(choices_for_user['\
                          + mylist[i] + '])'
 
 def eval_operator(mylist, op, expand_to):
+    '''Applies the correspondence between OP and the python code EXPAND_TO.
+    For example, if MYLIST = ['1', '&', '2'], OP = '&', and EXPAND_TO =
+    set.intersection, then we return ['(set.intersection(1,2))'].
+    '''
     while op in mylist:
         ind = mylist.index(op)
         right = mylist.pop(ind + 1)
@@ -175,17 +184,23 @@ def eval_operator(mylist, op, expand_to):
         mylist[ind] = ''.join(joinlist)
 
 def eval_without_parens(mylist):
+    '''Expands the & and | operators in MYLIST, using eval_operator.'''
     eval_operator(mylist, '&', 'set.intersection')
     eval_operator(mylist, '|', 'set.union')
     assert len(mylist) == 1
     return '(' + mylist[0] + ')'
 
 def list_rindex(thelist, findthis):
+    '''Returns the rightmost index of FINDTHIS in THELIST.'''
     length = len(thelist)
     ind_of_reversed = list(reversed(thelist)).index(findthis)
     return length - 1 - ind_of_reversed
 
 def full_parse(input_):
+    '''Fully parses string input such as '(43 & 47) & (16 | 30 | 31 | 32)' into
+    executable python code that evaluates to a set of names corresponding to
+    the input and the links to personal pages for those names.
+    '''
     input_ = input_.replace(' ', '')
     mylist = split_by_operator(input_)
     sub_with_searches(mylist)
@@ -200,9 +215,15 @@ def full_parse(input_):
     return mylist[0]
 
 def user_input_to_names_links(input_):
+    '''Parses a string such as '(43 & 47) & (16 | 30 | 31 | 32)' and evaluates
+    it in order to return a set.
+    '''
     return eval(full_parse(input_))
 
 def get_user_input():
+    '''Prompts to user to enter a set-theoretic description of the group that
+    he or she wants to consider, and returns the user's input.
+    '''
     print display_for_user
     msg = 'Use set operations to describe the set of people you would like to'\
             ' consider.'\
@@ -216,9 +237,11 @@ def get_user_input():
     return input_
 
 def query():
+    '''Prompts the user to describe a group, and returns the names and
+    membership information corresponding to that group. This is the only
+    function that is intended to be called by other modules.
+    '''
     input_ = get_user_input()
     names_links_set = user_input_to_names_links(input_)
     member_info = names_memberships_from_names_links(names_links_set)
     return member_info
-
-print query()
