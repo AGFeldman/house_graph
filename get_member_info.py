@@ -63,7 +63,8 @@ def find_house_in_text(line):
         if house in line:
             fullness = 'Full' in line
             if not fullness:
-                assert 'Social' in line
+                if not 'Social' in line:
+                    return
             return house, fullness
 
 house_affiliations_re = re.compile('House Affiliations.*?</tr>',
@@ -76,7 +77,11 @@ def get_member_info(url):
     '''
     members_houses = []
     text = urlopen(url).read()
-    text = house_affiliations_re.findall(text)[0]
+    text = house_affiliations_re.findall(text)
+    if len(text) > 0:
+        text = text[0]
+    else:
+        return []
     for line in text.split('\n'):
         houseinfo = find_house_in_text(line)
         if houseinfo is not None:
