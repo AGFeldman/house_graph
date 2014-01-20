@@ -1,14 +1,23 @@
-from get_member_info import query
+#!/usr/bin/env python
+"""
+This module makes DOT graphs using membership info queried with the
+get_member_info module.
+"""
+
+import get_member_info as gmi
 from itertools import combinations
 from shutil import copy2
 
-outputname = 'output.dot'
-
+input_ = gmi.get_user_input()
+outputname = raw_input('Name of output file? (Should end in .dot): ')
+if outputname == '':
+    outputname = 'output.dot'
 copy2('template.dot', outputname)
-member_info = query()
+title = gmi.make_title(input_)
+member_info = gmi.query(input_)
 
 def dot_code_from_combo(combo):
-    '''Given a combination ((houseA, is_full_memberA),
+    """Given a combination ((houseA, is_full_memberA),
     (houseB, is_full_memberB)), returns a line of .dot code that draws the 
     appropriate line between houseA and houseB. If is_full_memberA and
     is_full_memberB, then a black line with no arrows should be drawn.
@@ -17,7 +26,7 @@ def dot_code_from_combo(combo):
     if not is_full_memberA but is_full_memberB. If not is_full_memberA
     and not is_full_memberB, then there should be a chocolate-colored line
     with no arrows drawn.
-    '''
+    """
     numfull = 0
     if combo[0][1]:
         numfull += 1
@@ -47,6 +56,8 @@ def dot_code_from_combo(combo):
     return code
 
 with open(outputname, 'a') as out:
+    out.write('label=\"' + title + '\";')
+    out.write('labelloc=top')
     for person in member_info:
         memberships = person[1]
         combos = list(combinations(memberships, 2))
