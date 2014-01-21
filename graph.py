@@ -9,6 +9,7 @@ from shutil import copy2
 import sys
 
 if len(sys.argv) == 1:
+    # we need to prompt the user for more input
     min_memberships = 2
     input_ = gmi.get_user_input()
     outputname = raw_input('Name of output file? (Should end in .dot): ')
@@ -34,6 +35,10 @@ title = gmi.make_title(input_)
 member_info = gmi.query(input_)
 
 def get_dot_code_for_person(person):
+    """Returns a list of lines of DOT code to specify a person's point in
+    the graph based on membership data. PERSON is a tuple (name, list of 
+    memberships.
+    """
     name = '\"' + person[0] + '\"'
     lines = []
     lines.append('    ' + name + ';\n')
