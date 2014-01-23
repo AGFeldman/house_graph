@@ -1,4 +1,4 @@
-This software scrapes publicly availible data from http://donut.caltech.edu/directory about the membership of Caltech undergraduates in the eight different houses.
+This software scrapes data from http://donut.caltech.edu/directory about the membership of Caltech undergraduates in the eight different houses. This data is only accessible through the Caltech network.
 
 Usage: python graph.py will prompt the user to enter a description of the group of undergraduates to consider, the file name to output, and whether to show undergraduates who are members of just one house.
 
